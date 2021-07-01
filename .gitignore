@@ -1,0 +1,6 @@
+# node
+node_modules/
+
+# hexo Product
+public/
+db.json

@@ -1,0 +1,41 @@
+title: Simon | 氷
+subtitle: 欢迎来到我的网站
+description: Simon's 网站
+keywords: Simon_chen blog
+author: Simon_chen
+
+language: zh-CN
+timezone: Asia/Shanghai
+theme: fluid # 指定主题
+
+url: https://blog.gokoruri.com
+root: /
+permalink: /:year/:month/:name/
+
+nofollow:
+  enable: true
+  field: site
+  exclude:
+
+marked:
+  gfm: true
+  pedantic: false
+  breaks: true
+  smartLists: true
+  smartypants: true
+  quotes: "“”‘’"
+  modifyAnchors: 0
+  autolink: false
+  mangle: true
+  sanitizeUrl: true
+  headerIds: true
+  anchorAlias: true
+  lazyload: true
+  prependRoot: false
+  postAsset: false
+  external_link:
+    enable: false
+    exclude: []
+    nofollow: false
+  disableNunjucks: false
+  descriptionLists: false
