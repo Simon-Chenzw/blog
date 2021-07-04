@@ -4,6 +4,31 @@
   
   
   <entry>
+    <title>免 ROOT 安卓抓包</title>
+    <link href="/2021/07/android-packet-capture/"/>
+    <url>/2021/07/android-packet-capture/</url>
+    
+    <content type="html"><![CDATA[<h2 id="本人环境"><a href="#本人环境" class="headerlink" title="本人环境"></a>本人环境</h2><ul><li>小米 11</li><li>Android 11</li><li>MIUI 12.5 开发版 21.6.30</li></ul><h2 id="安装抓包APP"><a href="#安装抓包APP" class="headerlink" title="安装抓包APP"></a>安装抓包APP</h2><p>随便找一个安卓免ROOT抓包APP即可<br>我使用的是： <a href="https://play.google.com/store/apps/details?id=app.greyshirts.sslcapture">Packet Capture</a> - Google Play</p><h2 id="生成自签名证书"><a href="#生成自签名证书" class="headerlink" title="生成自签名证书"></a>生成自签名证书</h2><p>新版安卓不允许自动安装CA证书，所以我们需要自己生成证书，并且分别导入至抓包 APP 和系统</p><h3 id="创建证书"><a href="#创建证书" class="headerlink" title="创建证书"></a>创建证书</h3><ol><li><p>在电脑上安装 openssl</p></li><li><p>创建自签发证书<br>证书的信息可以全部默认</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">openssl req -x509 -newkey rsa:4096 -keyout self.key -out self.crt -nodes<br></code></pre></td></tr></table></figure></li><li><p>将证书打包成 p12 格式 ( Packet Capture只支持 P12 的导入 )<br>导入时需要alias和password，alias就是命令行的name</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">openssl pkcs12 -<span class="hljs-built_in">export</span> -out self.p12 -inkey self.key -<span class="hljs-keyword">in</span> self.crt -name <span class="hljs-string">&quot;self-signed&quot;</span><br></code></pre></td></tr></table></figure></li><li><p>将三个证书上传至手机</p></li></ol><h3 id="导入至APP"><a href="#导入至APP" class="headerlink" title="导入至APP"></a>导入至APP</h3><p>将 p12 证书导入抓包APP。具体细节视所选app而定。</p><h3 id="导入至手机-CA证书"><a href="#导入至手机-CA证书" class="headerlink" title="导入至手机 CA证书"></a>导入至手机 CA证书</h3><p>手机中可以安装两种 CA证书，系统证书及用户证书。未 ROOT 的情况下安装不了系统证书<br>进入 手机设置 -&gt; 安全 -&gt; 安装 CA 证书 -&gt; 选择.crt ( 具体路径视系统不同 )</p><h2 id="开始抓包"><a href="#开始抓包" class="headerlink" title="开始抓包"></a>开始抓包</h2><p>一个可行的抓包原理是：通过代理获取所有流量，通过中间人攻击破解 SSL 加密流量。</p><h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>实测能够正常抓取 app 的加密流量。<br>但是个人猜测，如果有 APP 使用自己的内置证书，可能是抓不到的。</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>misc</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>Android</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>怎样让 Pydantic 自动实例出子类</title>
     <link href="/2021/06/pydantic-hack/"/>
     <url>/2021/06/pydantic-hack/</url>
