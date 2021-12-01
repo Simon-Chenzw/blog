@@ -4,6 +4,33 @@
   
   
   <entry>
+    <title>图形学复习笔记</title>
+    <link href="/2021/11/cg-note/"/>
+    <url>/2021/11/cg-note/</url>
+    
+    <content type="html"><![CDATA[<p>华南理工大学2021学年计算机图形学复习笔记</p><ul><li><p><a href="note.pdf">pdf</a></p></li><li><p><a href="note.txt">markdown</a></p><ul><li>GBK &amp; CRLF</li><li>txt extension</li></ul></li></ul>]]></content>
+    
+    
+    <categories>
+      
+      <category>Study</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>study</tag>
+      
+      <tag>scut</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>免 ROOT 安卓抓包</title>
     <link href="/2021/07/android-packet-capture/"/>
     <url>/2021/07/android-packet-capture/</url>
@@ -45,7 +72,7 @@
     
     <tags>
       
-      <tag>python</tag>
+      <tag>Python</tag>
       
     </tags>
     
