@@ -11,6 +11,7 @@ theme: fluid # 指定主题
 url: https://blog.gokoruri.com
 root: /
 permalink: /:year/:month/:name/
+post_asset_folder: true
 
 nofollow:
   enable: true
@@ -32,7 +33,7 @@ marked:
   anchorAlias: true
   lazyload: true
   prependRoot: false
-  postAsset: false
+  postAsset: true
   external_link:
     enable: false
     exclude: []

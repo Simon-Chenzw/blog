@@ -3,7 +3,7 @@ title: 怎样让 Pydantic 自动实例出子类
 date: 2021-06-24 11:41:37
 categories: Python
 tags:
-    - python
+    - Python
 excerpt: 如何使 Pydantic 能够自动依据 type 键的值自动创建子类实例
 ---
 
