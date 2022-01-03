@@ -13,10 +13,10 @@
   <meta http-equiv="x-ua-compatible" content="ie=edge">
   
   <meta name="theme-color" content="#483d8b">
-  <meta name="description" content="如何使 Pydantic 能够自动依据 type 键的值自动创建子类实例">
   <meta name="author" content="Simon_chen">
   <meta name="keywords" content="Simon_chen blog">
-  <meta name="description" content="如何使 Pydantic 能够自动依据 type 键的值自动创建子类实例">
+  
+    <meta name="description" content="如何使 Pydantic 能够自动依据 type 键的值自动创建子类实例">
 <meta property="og:type" content="article">
 <meta property="og:title" content="怎样让 Pydantic 自动实例出子类">
 <meta property="og:url" content="https://blog.gokoruri.com/2021/06/pydantic-hack/index.html">
@@ -24,10 +24,11 @@
 <meta property="og:description" content="如何使 Pydantic 能够自动依据 type 键的值自动创建子类实例">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2021-06-24T03:41:37.000Z">
-<meta property="article:modified_time" content="2022-01-03T08:21:20.507Z">
+<meta property="article:modified_time" content="2022-01-03T08:22:02.628Z">
 <meta property="article:author" content="Simon_chen">
 <meta property="article:tag" content="Python">
 <meta name="twitter:card" content="summary_large_image">
+  
   
   <title>怎样让 Pydantic 自动实例出子类 - Simon | 氷</title>
 
@@ -66,7 +67,7 @@
 
   <script id="fluid-configs">
     var Fluid = window.Fluid || {};
-    var CONFIG = {"hostname":"blog.gokoruri.com","root":"/","version":"1.8.12","typing":{"enable":false,"typeSpeed":70,"cursorChar":"_","loop":false},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname"}},"search_path":"/local-search.xml"};
+    var CONFIG = {"hostname":"blog.gokoruri.com","root":"/","version":"1.8.14","typing":{"enable":false,"typeSpeed":70,"cursorChar":"_","loop":false},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
   </script>
   <script  src="/js/utils.js" ></script>
   <script  src="/js/color-schema.js" ></script>
@@ -207,7 +208,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      14 分钟
+      39 分钟
     </span>
   
 
@@ -240,7 +241,7 @@
             
             <div class="markdown-body">
               <h1 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h1><h2 id="简述"><a href="#简述" class="headerlink" title="简述"></a>简述</h2><p>现有以下类型。我们想要创建在 base 的时候，能够依据 type 键的值自动创建子类实例</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> typing <span class="hljs-keyword">import</span> <span class="hljs-type">Literal</span><br><span class="hljs-keyword">from</span> pydantic <span class="hljs-keyword">import</span> BaseModel  <span class="hljs-comment"># pylint: disable=no-name-in-module</span><br><br><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">base</span>(<span class="hljs-params">BaseModel</span>):</span><br>    <span class="hljs-built_in">type</span>: <span class="hljs-built_in">str</span><br><br><br><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">sup1</span>(<span class="hljs-params">base</span>):</span><br>    <span class="hljs-built_in">type</span>: <span class="hljs-type">Literal</span>[<span class="hljs-string">&#x27;sup1&#x27;</span>]<br>    sup1: <span class="hljs-built_in">str</span><br><br><br><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">sup2</span>(<span class="hljs-params">base</span>):</span><br>    <span class="hljs-built_in">type</span>: <span class="hljs-type">Literal</span>[<span class="hljs-string">&#x27;sup2&#x27;</span>]<br>    sup2: <span class="hljs-built_in">str</span><br></code></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><div class="code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></div></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> typing <span class="hljs-keyword">import</span> <span class="hljs-type">Literal</span><br><span class="hljs-keyword">from</span> pydantic <span class="hljs-keyword">import</span> BaseModel  <span class="hljs-comment"># pylint: disable=no-name-in-module</span><br><br><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">base</span>(<span class="hljs-params">BaseModel</span>):</span><br>    <span class="hljs-built_in">type</span>: <span class="hljs-built_in">str</span><br><br><br><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">sup1</span>(<span class="hljs-params">base</span>):</span><br>    <span class="hljs-built_in">type</span>: <span class="hljs-type">Literal</span>[<span class="hljs-string">&#x27;sup1&#x27;</span>]<br>    sup1: <span class="hljs-built_in">str</span><br><br><br><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">sup2</span>(<span class="hljs-params">base</span>):</span><br>    <span class="hljs-built_in">type</span>: <span class="hljs-type">Literal</span>[<span class="hljs-string">&#x27;sup2&#x27;</span>]<br>    sup2: <span class="hljs-built_in">str</span><br></code></pre></td></tr></table></figure>
 
 <h2 id="问题来源"><a href="#问题来源" class="headerlink" title="问题来源"></a>问题来源</h2><p><a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/project-mirai/mirai-api-http"><code>mirai-api-http</code></a> 是 QQbot <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/mamoe/mirai"><code>mirai</code></a> 的 api 插件， 它是使用这种 json 表示消息信息：</p>
 <figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs json">&#123;<br>    <span class="hljs-attr">&quot;type&quot;</span>: <span class="hljs-string">&quot;FriendMessage&quot;</span>,<br>    <span class="hljs-attr">&quot;sender&quot;</span>: &#123; <span class="hljs-attr">&quot;id&quot;</span>: <span class="hljs-number">123</span>, <span class="hljs-attr">&quot;nickname&quot;</span>: <span class="hljs-string">&quot;&quot;</span>, <span class="hljs-attr">&quot;remark&quot;</span>: <span class="hljs-string">&quot;&quot;</span> &#125;,<br>    <span class="hljs-attr">&quot;messageChain&quot;</span>: [<br>        &#123; <span class="hljs-attr">&quot;type&quot;</span>: <span class="hljs-string">&quot;Source&quot;</span>, <span class="hljs-attr">&quot;id&quot;</span>: <span class="hljs-number">123456</span>, <span class="hljs-attr">&quot;time&quot;</span>: <span class="hljs-number">123456</span> &#125;,<br>        &#123; <span class="hljs-attr">&quot;type&quot;</span>: <span class="hljs-string">&quot;AtAll&quot;</span> &#125;,<br>        &#123; <span class="hljs-attr">&quot;type&quot;</span>: <span class="hljs-string">&quot;Plain&quot;</span>, <span class="hljs-attr">&quot;text&quot;</span>: <span class="hljs-string">&quot;hello world&quot;</span> &#125;<br>    ]<br>&#125;<br></code></pre></td></tr></table></figure>
