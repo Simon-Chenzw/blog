@@ -1,7 +1,7 @@
 ---
 title: 免 ROOT 安卓抓包
 date: 2021-07-04 12:13:53
-categories: misc
+categories: Misc
 tags:
     - Android
 excerpt: 生成自签名证书，安装证书，抓包
