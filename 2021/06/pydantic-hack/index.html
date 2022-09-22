@@ -24,10 +24,11 @@
 <meta property="og:description" content="如何使 Pydantic 能够自动依据 type 键的值自动创建子类实例">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2021-06-24T03:41:37.000Z">
-<meta property="article:modified_time" content="2022-09-22T01:11:34.351Z">
+<meta property="article:modified_time" content="2022-09-22T01:27:04.514Z">
 <meta property="article:author" content="Simon_chen">
 <meta property="article:tag" content="Python">
 <meta name="twitter:card" content="summary_large_image">
+  
   
   
   <title>怎样让 Pydantic 自动实例出子类 - Simon | 氷</title>
@@ -35,25 +36,19 @@
   <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" />
 
 
+
   <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4.0.0/github-markdown.min.css" />
+
   <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
 
-  
-    
-    
-      
-      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10.7.2/styles/github-gist.min.css" />
-    
-  
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" />
 
-  
-    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" />
-  
 
 
 <!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
 
-<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
 
 
 
@@ -62,21 +57,42 @@
 
 <link  rel="stylesheet" href="/css/main.css" />
 
-<!-- 自定义样式保持在最底部 -->
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
 
 
   <script id="fluid-configs">
     var Fluid = window.Fluid || {};
-    var CONFIG = {"hostname":"blog.gokoruri.com","root":"/","version":"1.8.14","typing":{"enable":false,"typeSpeed":70,"cursorChar":"_","loop":false},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"blog.gokoruri.com","root":"/","version":"1.9.3","typing":{"enable":false,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
   </script>
   <script  src="/js/utils.js" ></script>
   <script  src="/js/color-schema.js" ></script>
-<meta name="generator" content="Hexo 6.0.0"></head>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
 
 
 <body>
-  <header style="height: 40vh;">
-    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 40vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand" href="/">
       <strong>Simon | 氷</strong>
@@ -158,6 +174,7 @@
               &nbsp;<i class="iconfont icon-search"></i>&nbsp;
             </a>
           </li>
+          
         
         
           <li class="nav-item" id="color-toggle-btn">
@@ -170,59 +187,71 @@
   </div>
 </nav>
 
-    <div class="banner" id="banner" parallax=true
-         style="background: url('/img/default.jpg') no-repeat center center;
-           background-size: cover;">
-      <div class="full-bg-img">
-        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
-          <div class="page-header text-center fade-in-up">
-            <span class="h2" id="subtitle" title="怎样让 Pydantic 自动实例出子类">
-              
-                怎样让 Pydantic 自动实例出子类
-              
-            </span>
-
-            
-              <div class="mt-3">
-  
-  
-    <span class="post-meta">
-      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-      <time datetime="2021-06-24 11:41" pubdate>
-        2021年6月24日 中午
-      </time>
-    </span>
-  
-</div>
-
-<div class="mt-1">
-  
-    <span class="post-meta mr-2">
-      <i class="iconfont icon-chart"></i>
-      4.6k 字
-    </span>
   
 
-  
-    <span class="post-meta mr-2">
-      <i class="iconfont icon-clock-fill"></i>
-      
-      
-      39 分钟
-    </span>
-  
-
-  
-  
-</div>
-
-            
-          </div>
-
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">怎样让 Pydantic 自动实例出子类</span>
           
         </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2021-06-24 11:41" pubdate>
+          2021年6月24日 中午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          <!-- compatible with older versions-->
+          4.6k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          <!-- compatible with older versions-->
+          39 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
       </div>
+
+      
     </div>
+  </div>
+</div>
+
+</div>
+
   </header>
 
   <main>
@@ -231,20 +260,26 @@
 
 <div class="container-fluid nopadding-x">
   <div class="row nomargin-x">
-    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
     <div class="col-lg-8 nopadding-x-md">
       <div class="container nopadding-x-md" id="board-ctn">
-        <div class="py-5" id="board">
+        <div id="board">
           <article class="post-content mx-auto">
             <!-- SEO header -->
             <h1 style="display: none">怎样让 Pydantic 自动实例出子类</h1>
             
-            <div class="markdown-body">
-              <h1 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h1><h2 id="简述"><a href="#简述" class="headerlink" title="简述"></a>简述</h2><p>现有以下类型。我们想要创建在 base 的时候，能够依据 type 键的值自动创建子类实例</p>
-<figure class="highlight python"><table><tr><td class="gutter"><div class="code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></div></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> typing <span class="hljs-keyword">import</span> <span class="hljs-type">Literal</span><br><span class="hljs-keyword">from</span> pydantic <span class="hljs-keyword">import</span> BaseModel  <span class="hljs-comment"># pylint: disable=no-name-in-module</span><br><br><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">base</span>(<span class="hljs-params">BaseModel</span>):</span><br>    <span class="hljs-built_in">type</span>: <span class="hljs-built_in">str</span><br><br><br><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">sup1</span>(<span class="hljs-params">base</span>):</span><br>    <span class="hljs-built_in">type</span>: <span class="hljs-type">Literal</span>[<span class="hljs-string">&#x27;sup1&#x27;</span>]<br>    sup1: <span class="hljs-built_in">str</span><br><br><br><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">sup2</span>(<span class="hljs-params">base</span>):</span><br>    <span class="hljs-built_in">type</span>: <span class="hljs-type">Literal</span>[<span class="hljs-string">&#x27;sup2&#x27;</span>]<br>    sup2: <span class="hljs-built_in">str</span><br></code></pre></td></tr></table></figure>
+            
+              <div class="markdown-body">
+                
+                <h1 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h1><h2 id="简述"><a href="#简述" class="headerlink" title="简述"></a>简述</h2><p>现有以下类型。我们想要创建在 base 的时候，能够依据 type 键的值自动创建子类实例</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> typing <span class="hljs-keyword">import</span> <span class="hljs-type">Literal</span><br><span class="hljs-keyword">from</span> pydantic <span class="hljs-keyword">import</span> BaseModel  <span class="hljs-comment"># pylint: disable=no-name-in-module</span><br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">base</span>(<span class="hljs-title class_ inherited__">BaseModel</span>):<br>    <span class="hljs-built_in">type</span>: <span class="hljs-built_in">str</span><br><br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">sup1</span>(<span class="hljs-title class_ inherited__">base</span>):<br>    <span class="hljs-built_in">type</span>: <span class="hljs-type">Literal</span>[<span class="hljs-string">&#x27;sup1&#x27;</span>]<br>    sup1: <span class="hljs-built_in">str</span><br><br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">sup2</span>(<span class="hljs-title class_ inherited__">base</span>):<br>    <span class="hljs-built_in">type</span>: <span class="hljs-type">Literal</span>[<span class="hljs-string">&#x27;sup2&#x27;</span>]<br>    sup2: <span class="hljs-built_in">str</span><br></code></pre></td></tr></table></figure>
 
 <h2 id="问题来源"><a href="#问题来源" class="headerlink" title="问题来源"></a>问题来源</h2><p><a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/project-mirai/mirai-api-http"><code>mirai-api-http</code></a> 是 QQbot <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/mamoe/mirai"><code>mirai</code></a> 的 api 插件， 它是使用这种 json 表示消息信息：</p>
-<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs json">&#123;<br>    <span class="hljs-attr">&quot;type&quot;</span>: <span class="hljs-string">&quot;FriendMessage&quot;</span>,<br>    <span class="hljs-attr">&quot;sender&quot;</span>: &#123; <span class="hljs-attr">&quot;id&quot;</span>: <span class="hljs-number">123</span>, <span class="hljs-attr">&quot;nickname&quot;</span>: <span class="hljs-string">&quot;&quot;</span>, <span class="hljs-attr">&quot;remark&quot;</span>: <span class="hljs-string">&quot;&quot;</span> &#125;,<br>    <span class="hljs-attr">&quot;messageChain&quot;</span>: [<br>        &#123; <span class="hljs-attr">&quot;type&quot;</span>: <span class="hljs-string">&quot;Source&quot;</span>, <span class="hljs-attr">&quot;id&quot;</span>: <span class="hljs-number">123456</span>, <span class="hljs-attr">&quot;time&quot;</span>: <span class="hljs-number">123456</span> &#125;,<br>        &#123; <span class="hljs-attr">&quot;type&quot;</span>: <span class="hljs-string">&quot;AtAll&quot;</span> &#125;,<br>        &#123; <span class="hljs-attr">&quot;type&quot;</span>: <span class="hljs-string">&quot;Plain&quot;</span>, <span class="hljs-attr">&quot;text&quot;</span>: <span class="hljs-string">&quot;hello world&quot;</span> &#125;<br>    ]<br>&#125;<br></code></pre></td></tr></table></figure>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;FriendMessage&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;sender&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span> <span class="hljs-attr">&quot;id&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">123</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;nickname&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;remark&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;&quot;</span> <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;messageChain&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>        <span class="hljs-punctuation">&#123;</span> <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Source&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;id&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">123456</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;time&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">123456</span> <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-punctuation">&#123;</span> <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;AtAll&quot;</span> <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-punctuation">&#123;</span> <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Plain&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;text&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;hello world&quot;</span> <span class="hljs-punctuation">&#125;</span><br>    <span class="hljs-punctuation">]</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
 <p>其中 messageChain 中的 Text 有许多类型，sender 也有许多类型</p>
 <p>在往本人的框架 <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Simon-Chenzw/madoka"><code>madoka</code></a> 中加入 pydantic 时，就产生了这种需求<br>譬如上述 json 实例出来的应该是：</p>
 <figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">context:</span> <span class="hljs-comment"># class: FriendContext</span><br>    <span class="hljs-attr">type:</span> <span class="hljs-string">FriendMessage</span><br>    <span class="hljs-attr">sender:</span> <span class="hljs-comment"># class: FriendSender</span><br>    <span class="hljs-attr">messageChain:</span><br>        <span class="hljs-bullet">-</span> <span class="hljs-string">SourceText</span><br>        <span class="hljs-bullet">-</span> <span class="hljs-string">AtText</span><br>        <span class="hljs-bullet">-</span> <span class="hljs-string">PlainText</span><br></code></pre></td></tr></table></figure>
@@ -262,7 +297,7 @@
 </ul>
 <h2 id="1-使用-Union"><a href="#1-使用-Union" class="headerlink" title="1. 使用 Union"></a>1. 使用 Union</h2><p>依据 Pydantic 的 <a target="_blank" rel="noopener external nofollow noreferrer" href="https://pydantic-docs.helpmanual.io/usage/types/#unions">文档</a><br>Pydantic 会依次尝试 Union 中的类，并使用第一个匹配的</p>
 <p>实现代码：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> typing <span class="hljs-keyword">import</span> <span class="hljs-type">Literal</span>, <span class="hljs-type">Union</span><br><span class="hljs-keyword">from</span> pydantic <span class="hljs-keyword">import</span> BaseModel  <span class="hljs-comment"># pylint: disable=no-name-in-module</span><br><br><br><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">base</span>(<span class="hljs-params">BaseModel</span>):</span><br>    <span class="hljs-built_in">type</span>: <span class="hljs-built_in">str</span><br><br><br><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">sup1</span>(<span class="hljs-params">base</span>):</span><br>    <span class="hljs-built_in">type</span>: <span class="hljs-type">Literal</span>[<span class="hljs-string">&#x27;sup1&#x27;</span>]<br>    sup1: <span class="hljs-built_in">str</span><br><br><br><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">sup2</span>(<span class="hljs-params">base</span>):</span><br>    <span class="hljs-built_in">type</span>: <span class="hljs-type">Literal</span>[<span class="hljs-string">&#x27;sup2&#x27;</span>]<br>    sup2: <span class="hljs-built_in">str</span><br><br><br><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">foo</span>(<span class="hljs-params">BaseModel</span>):</span><br>    __root__: <span class="hljs-built_in">list</span>[<span class="hljs-type">Union</span>[sup1, sup2, base]]<br><br><br>obj = foo.parse_obj([<br>    &#123;<span class="hljs-string">&#x27;type&#x27;</span>: <span class="hljs-string">&#x27;sup1&#x27;</span>, <span class="hljs-string">&#x27;sup1&#x27;</span>: <span class="hljs-string">&#x27;this is sup1&#x27;</span>&#125;,<br>    &#123;<span class="hljs-string">&#x27;type&#x27;</span>: <span class="hljs-string">&#x27;sup2&#x27;</span>, <span class="hljs-string">&#x27;sup2&#x27;</span>: <span class="hljs-string">&#x27;this is sup2&#x27;</span>&#125;,<br>    &#123;<span class="hljs-string">&#x27;type&#x27;</span>: <span class="hljs-string">&#x27;sup3&#x27;</span>, <span class="hljs-string">&#x27;sup3&#x27;</span>: <span class="hljs-string">&#x27;this is sup3&#x27;</span>&#125;,<br>])<br><span class="hljs-built_in">print</span>(obj)<br><br><span class="hljs-comment"># [</span><br><span class="hljs-comment">#     sup1(type=&#x27;sup1&#x27;, sup1=&#x27;this is sup1&#x27;),</span><br><span class="hljs-comment">#     sup2(type=&#x27;sup2&#x27;, sup2=&#x27;this is sup2&#x27;),</span><br><span class="hljs-comment">#     base(type=&#x27;sup3&#x27;)</span><br><span class="hljs-comment"># ]</span><br></code></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> typing <span class="hljs-keyword">import</span> <span class="hljs-type">Literal</span>, <span class="hljs-type">Union</span><br><span class="hljs-keyword">from</span> pydantic <span class="hljs-keyword">import</span> BaseModel  <span class="hljs-comment"># pylint: disable=no-name-in-module</span><br><br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">base</span>(<span class="hljs-title class_ inherited__">BaseModel</span>):<br>    <span class="hljs-built_in">type</span>: <span class="hljs-built_in">str</span><br><br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">sup1</span>(<span class="hljs-title class_ inherited__">base</span>):<br>    <span class="hljs-built_in">type</span>: <span class="hljs-type">Literal</span>[<span class="hljs-string">&#x27;sup1&#x27;</span>]<br>    sup1: <span class="hljs-built_in">str</span><br><br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">sup2</span>(<span class="hljs-title class_ inherited__">base</span>):<br>    <span class="hljs-built_in">type</span>: <span class="hljs-type">Literal</span>[<span class="hljs-string">&#x27;sup2&#x27;</span>]<br>    sup2: <span class="hljs-built_in">str</span><br><br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">foo</span>(<span class="hljs-title class_ inherited__">BaseModel</span>):<br>    __root__: <span class="hljs-built_in">list</span>[<span class="hljs-type">Union</span>[sup1, sup2, base]]<br><br><br>obj = foo.parse_obj([<br>    &#123;<span class="hljs-string">&#x27;type&#x27;</span>: <span class="hljs-string">&#x27;sup1&#x27;</span>, <span class="hljs-string">&#x27;sup1&#x27;</span>: <span class="hljs-string">&#x27;this is sup1&#x27;</span>&#125;,<br>    &#123;<span class="hljs-string">&#x27;type&#x27;</span>: <span class="hljs-string">&#x27;sup2&#x27;</span>, <span class="hljs-string">&#x27;sup2&#x27;</span>: <span class="hljs-string">&#x27;this is sup2&#x27;</span>&#125;,<br>    &#123;<span class="hljs-string">&#x27;type&#x27;</span>: <span class="hljs-string">&#x27;sup3&#x27;</span>, <span class="hljs-string">&#x27;sup3&#x27;</span>: <span class="hljs-string">&#x27;this is sup3&#x27;</span>&#125;,<br>])<br><span class="hljs-built_in">print</span>(obj)<br><br><span class="hljs-comment"># [</span><br><span class="hljs-comment">#     sup1(type=&#x27;sup1&#x27;, sup1=&#x27;this is sup1&#x27;),</span><br><span class="hljs-comment">#     sup2(type=&#x27;sup2&#x27;, sup2=&#x27;this is sup2&#x27;),</span><br><span class="hljs-comment">#     base(type=&#x27;sup3&#x27;)</span><br><span class="hljs-comment"># ]</span><br></code></pre></td></tr></table></figure>
 
 <h3 id="优劣"><a href="#优劣" class="headerlink" title="优劣"></a>优劣</h3><ul>
 <li>优点：<ul>
@@ -287,45 +322,101 @@
 </ol>
 <h3 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h3><p>pydantic 的每一层实例化都逃不开 <code>cls(**obj)</code> ，从 python 官方文档可以找到这样一个函数 <a target="_blank" rel="noopener external nofollow noreferrer" href="https://docs.python.org/zh-cn/3/reference/datamodel.html#object.__new__"><code>__new__</code></a>。<br>它允许我们返回一个其他实例，并调用那个实例的 <code>__init__</code> 。所以我们可以使用这个函数，动态返回子类</p>
 <p>实现代码：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> __future__ <span class="hljs-keyword">import</span> annotations<br><span class="hljs-keyword">from</span> typing <span class="hljs-keyword">import</span> <span class="hljs-type">Literal</span>, <span class="hljs-type">Type</span>, get_args, get_origin<br><span class="hljs-keyword">from</span> pydantic <span class="hljs-keyword">import</span> BaseModel  <span class="hljs-comment"># pylint: disable=no-name-in-module</span><br><br><br><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">base</span>(<span class="hljs-params">BaseModel, extra=<span class="hljs-string">&#x27;forbid&#x27;</span></span>):</span><br>    <span class="hljs-built_in">type</span>: <span class="hljs-built_in">str</span><br><br>    <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">TypeMap</span>:</span><br>        type_key: <span class="hljs-built_in">str</span> = <span class="hljs-string">&#x27;type&#x27;</span><br>        types: <span class="hljs-built_in">dict</span>[<span class="hljs-built_in">str</span>, <span class="hljs-type">Type</span>[base]] = &#123;&#125;<br>        extra_name: <span class="hljs-built_in">str</span> = <span class="hljs-string">&#x27;Extra&#x27;</span><br>        extra: <span class="hljs-type">Type</span>[base]<br><br><span class="hljs-meta">        @classmethod</span><br>        <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">add</span>(<span class="hljs-params">cls, ins_cls: <span class="hljs-type">Type</span>[base]</span>) -&gt; <span class="hljs-literal">None</span>:</span><br>            <span class="hljs-keyword">if</span> ins_cls.__name__ == cls.extra_name:<br>                cls.extra = ins_cls<br>                <span class="hljs-keyword">return</span><br><br>            field = ins_cls.__fields__.get(cls.type_key)<br>            <span class="hljs-keyword">if</span> field <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>:<br>                <span class="hljs-keyword">return</span><br><br>            <span class="hljs-keyword">if</span> get_origin(field.type_) <span class="hljs-keyword">is</span> <span class="hljs-type">Literal</span>:<br>                <span class="hljs-keyword">for</span> name <span class="hljs-keyword">in</span> get_args(field.type_):<br>                    <span class="hljs-keyword">assert</span> name <span class="hljs-keyword">not</span> <span class="hljs-keyword">in</span> cls.types, <span class="hljs-string">&quot;can&#x27;t have same key value&quot;</span><br>                    cls.types[name] = ins_cls<br><br>    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">__init_subclass__</span>(<span class="hljs-params">cls, **kwargs</span>) -&gt; <span class="hljs-literal">None</span>:</span><br>        cls.TypeMap.add(cls)<br>        <span class="hljs-keyword">return</span> <span class="hljs-built_in">super</span>().__init_subclass__()<br><br>    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">__new__</span>(<span class="hljs-params">cls, *args, **kwargs</span>) -&gt; <span class="hljs-type">Type</span>[base]:</span><br>        key = cls.TypeMap.type_key<br>        <span class="hljs-keyword">if</span> cls <span class="hljs-keyword">is</span> base:<br>            <span class="hljs-keyword">if</span> key <span class="hljs-keyword">in</span> kwargs:<br>                new_cls = cls.TypeMap.types.get(kwargs[key], cls.TypeMap.extra)<br>                <span class="hljs-keyword">return</span> <span class="hljs-built_in">super</span>().__new__(new_cls)<br>            <span class="hljs-keyword">else</span>:<br>                <span class="hljs-keyword">return</span> <span class="hljs-built_in">super</span>().__new__(cls.TypeMap.extra)<br>        <span class="hljs-keyword">else</span>:<br>            <span class="hljs-keyword">return</span> <span class="hljs-built_in">super</span>().__new__(cls)<br><br><br><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">sup1</span>(<span class="hljs-params">base</span>):</span><br>    <span class="hljs-built_in">type</span>: <span class="hljs-type">Literal</span>[<span class="hljs-string">&#x27;sup1&#x27;</span>]<br>    sup1: <span class="hljs-built_in">str</span><br><br><br><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">sup2</span>(<span class="hljs-params">base</span>):</span><br>    <span class="hljs-built_in">type</span>: <span class="hljs-type">Literal</span>[<span class="hljs-string">&#x27;sup2&#x27;</span>]<br>    sup2: <span class="hljs-built_in">str</span><br><br><br><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">sup3</span>(<span class="hljs-params">sup2</span>):</span><br>    <span class="hljs-built_in">type</span>: <span class="hljs-type">Literal</span>[<span class="hljs-string">&#x27;sup3&#x27;</span>]<br>    sup3: <span class="hljs-built_in">str</span><br><br><br><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Extra</span>(<span class="hljs-params">base, extra=<span class="hljs-string">&#x27;allow&#x27;</span></span>):</span><br>    <span class="hljs-keyword">pass</span><br><br><br><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">foo</span>(<span class="hljs-params">BaseModel</span>):</span><br>    __root__: <span class="hljs-built_in">list</span>[base]<br><br><br>obj = foo.parse_obj([<br>    &#123;<br>        <span class="hljs-string">&#x27;type&#x27;</span>: <span class="hljs-string">&#x27;sup1&#x27;</span>,<br>        <span class="hljs-string">&#x27;sup1&#x27;</span>: <span class="hljs-string">&#x27;this is sup1&#x27;</span><br>    &#125;,<br>    &#123;<br>        <span class="hljs-string">&#x27;type&#x27;</span>: <span class="hljs-string">&#x27;sup2&#x27;</span>,<br>        <span class="hljs-string">&#x27;sup2&#x27;</span>: <span class="hljs-string">&#x27;this is sup2&#x27;</span><br>    &#125;,<br>    &#123;<br>        <span class="hljs-string">&#x27;type&#x27;</span>: <span class="hljs-string">&#x27;sup3&#x27;</span>,<br>        <span class="hljs-string">&#x27;sup2&#x27;</span>: <span class="hljs-string">&#x27;this is sup2&#x27;</span>,<br>        <span class="hljs-string">&#x27;sup3&#x27;</span>: <span class="hljs-string">&#x27;this is sup3&#x27;</span><br>    &#125;,<br>    &#123;<br>        <span class="hljs-string">&#x27;type&#x27;</span>: <span class="hljs-string">&#x27;unknown&#x27;</span>,<br>        <span class="hljs-string">&#x27;extra&#x27;</span>: <span class="hljs-string">&#x27;this is extra&#x27;</span><br>    &#125;,<br>])<br><br><span class="hljs-built_in">print</span>(obj)<br><br><span class="hljs-comment"># [</span><br><span class="hljs-comment">#     sup1(type=&#x27;sup1&#x27;, sup1=&#x27;this is sup1&#x27;),</span><br><span class="hljs-comment">#     sup2(type=&#x27;sup2&#x27;, sup2=&#x27;this is sup2&#x27;),</span><br><span class="hljs-comment">#     sup3(type=&#x27;sup3&#x27;, sup2=&#x27;this is sup2&#x27;, sup3=&#x27;this is sup3&#x27;),</span><br><span class="hljs-comment">#     Extra(type=&#x27;unknown&#x27;, extra=&#x27;this is extra&#x27;),</span><br><span class="hljs-comment"># ]</span><br></code></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> __future__ <span class="hljs-keyword">import</span> annotations<br><span class="hljs-keyword">from</span> typing <span class="hljs-keyword">import</span> <span class="hljs-type">Literal</span>, <span class="hljs-type">Type</span>, get_args, get_origin<br><span class="hljs-keyword">from</span> pydantic <span class="hljs-keyword">import</span> BaseModel  <span class="hljs-comment"># pylint: disable=no-name-in-module</span><br><br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">base</span>(BaseModel, extra=<span class="hljs-string">&#x27;forbid&#x27;</span>):<br>    <span class="hljs-built_in">type</span>: <span class="hljs-built_in">str</span><br><br>    <span class="hljs-keyword">class</span> <span class="hljs-title class_">TypeMap</span>:<br>        type_key: <span class="hljs-built_in">str</span> = <span class="hljs-string">&#x27;type&#x27;</span><br>        types: <span class="hljs-built_in">dict</span>[<span class="hljs-built_in">str</span>, <span class="hljs-type">Type</span>[base]] = &#123;&#125;<br>        extra_name: <span class="hljs-built_in">str</span> = <span class="hljs-string">&#x27;Extra&#x27;</span><br>        extra: <span class="hljs-type">Type</span>[base]<br><br><span class="hljs-meta">        @classmethod</span><br>        <span class="hljs-keyword">def</span> <span class="hljs-title function_">add</span>(<span class="hljs-params">cls, ins_cls: <span class="hljs-type">Type</span>[base]</span>) -&gt; <span class="hljs-literal">None</span>:<br>            <span class="hljs-keyword">if</span> ins_cls.__name__ == cls.extra_name:<br>                cls.extra = ins_cls<br>                <span class="hljs-keyword">return</span><br><br>            field = ins_cls.__fields__.get(cls.type_key)<br>            <span class="hljs-keyword">if</span> field <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>:<br>                <span class="hljs-keyword">return</span><br><br>            <span class="hljs-keyword">if</span> get_origin(field.type_) <span class="hljs-keyword">is</span> <span class="hljs-type">Literal</span>:<br>                <span class="hljs-keyword">for</span> name <span class="hljs-keyword">in</span> get_args(field.type_):<br>                    <span class="hljs-keyword">assert</span> name <span class="hljs-keyword">not</span> <span class="hljs-keyword">in</span> cls.types, <span class="hljs-string">&quot;can&#x27;t have same key value&quot;</span><br>                    cls.types[name] = ins_cls<br><br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init_subclass__</span>(<span class="hljs-params">cls, **kwargs</span>) -&gt; <span class="hljs-literal">None</span>:<br>        cls.TypeMap.add(cls)<br>        <span class="hljs-keyword">return</span> <span class="hljs-built_in">super</span>().__init_subclass__()<br><br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__new__</span>(<span class="hljs-params">cls, *args, **kwargs</span>) -&gt; <span class="hljs-type">Type</span>[base]:<br>        key = cls.TypeMap.type_key<br>        <span class="hljs-keyword">if</span> cls <span class="hljs-keyword">is</span> base:<br>            <span class="hljs-keyword">if</span> key <span class="hljs-keyword">in</span> kwargs:<br>                new_cls = cls.TypeMap.types.get(kwargs[key], cls.TypeMap.extra)<br>                <span class="hljs-keyword">return</span> <span class="hljs-built_in">super</span>().__new__(new_cls)<br>            <span class="hljs-keyword">else</span>:<br>                <span class="hljs-keyword">return</span> <span class="hljs-built_in">super</span>().__new__(cls.TypeMap.extra)<br>        <span class="hljs-keyword">else</span>:<br>            <span class="hljs-keyword">return</span> <span class="hljs-built_in">super</span>().__new__(cls)<br><br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">sup1</span>(<span class="hljs-title class_ inherited__">base</span>):<br>    <span class="hljs-built_in">type</span>: <span class="hljs-type">Literal</span>[<span class="hljs-string">&#x27;sup1&#x27;</span>]<br>    sup1: <span class="hljs-built_in">str</span><br><br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">sup2</span>(<span class="hljs-title class_ inherited__">base</span>):<br>    <span class="hljs-built_in">type</span>: <span class="hljs-type">Literal</span>[<span class="hljs-string">&#x27;sup2&#x27;</span>]<br>    sup2: <span class="hljs-built_in">str</span><br><br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">sup3</span>(<span class="hljs-title class_ inherited__">sup2</span>):<br>    <span class="hljs-built_in">type</span>: <span class="hljs-type">Literal</span>[<span class="hljs-string">&#x27;sup3&#x27;</span>]<br>    sup3: <span class="hljs-built_in">str</span><br><br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Extra</span>(base, extra=<span class="hljs-string">&#x27;allow&#x27;</span>):<br>    <span class="hljs-keyword">pass</span><br><br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">foo</span>(<span class="hljs-title class_ inherited__">BaseModel</span>):<br>    __root__: <span class="hljs-built_in">list</span>[base]<br><br><br>obj = foo.parse_obj([<br>    &#123;<br>        <span class="hljs-string">&#x27;type&#x27;</span>: <span class="hljs-string">&#x27;sup1&#x27;</span>,<br>        <span class="hljs-string">&#x27;sup1&#x27;</span>: <span class="hljs-string">&#x27;this is sup1&#x27;</span><br>    &#125;,<br>    &#123;<br>        <span class="hljs-string">&#x27;type&#x27;</span>: <span class="hljs-string">&#x27;sup2&#x27;</span>,<br>        <span class="hljs-string">&#x27;sup2&#x27;</span>: <span class="hljs-string">&#x27;this is sup2&#x27;</span><br>    &#125;,<br>    &#123;<br>        <span class="hljs-string">&#x27;type&#x27;</span>: <span class="hljs-string">&#x27;sup3&#x27;</span>,<br>        <span class="hljs-string">&#x27;sup2&#x27;</span>: <span class="hljs-string">&#x27;this is sup2&#x27;</span>,<br>        <span class="hljs-string">&#x27;sup3&#x27;</span>: <span class="hljs-string">&#x27;this is sup3&#x27;</span><br>    &#125;,<br>    &#123;<br>        <span class="hljs-string">&#x27;type&#x27;</span>: <span class="hljs-string">&#x27;unknown&#x27;</span>,<br>        <span class="hljs-string">&#x27;extra&#x27;</span>: <span class="hljs-string">&#x27;this is extra&#x27;</span><br>    &#125;,<br>])<br><br><span class="hljs-built_in">print</span>(obj)<br><br><span class="hljs-comment"># [</span><br><span class="hljs-comment">#     sup1(type=&#x27;sup1&#x27;, sup1=&#x27;this is sup1&#x27;),</span><br><span class="hljs-comment">#     sup2(type=&#x27;sup2&#x27;, sup2=&#x27;this is sup2&#x27;),</span><br><span class="hljs-comment">#     sup3(type=&#x27;sup3&#x27;, sup2=&#x27;this is sup2&#x27;, sup3=&#x27;this is sup3&#x27;),</span><br><span class="hljs-comment">#     Extra(type=&#x27;unknown&#x27;, extra=&#x27;this is extra&#x27;),</span><br><span class="hljs-comment"># ]</span><br></code></pre></td></tr></table></figure>
 
 <h3 id="extra-策略"><a href="#extra-策略" class="headerlink" title="extra 策略"></a>extra 策略</h3><p>这份代码的 pydantic extra 策略是：除了 Extra 外的子类均为 forbid，同时 base 不会有实例的可能。<br>如果你的 extra 策略和我不同，譬如全局 allow 或 forbid。可以将 Extra 的部分代码删掉，并将 TypeMap.extra 改为 base</p>
 <h3 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h3><p>在实现这份代码时，我考虑过不同的实现方式。比如使用 metaclass ，但是会与 pydantic 的 meta 冲突。再比如把这份代码抽出成单独的类，从而达到复用，但是容易在类嵌类中冲突，并且代码会过于“动态”，并且考虑到本人框架中使用到这种技术的只有寥寥几个，所以放弃了这种实现方式。</p>
 
-            </div>
-            <hr>
-            <div>
-              <div class="post-metas mb-3">
-                
-                  <div class="post-meta mr-3">
-                    <i class="iconfont icon-category"></i>
-                    
-                      <a class="hover-with-bg" href="/categories/Python/">Python</a>
-                    
-                  </div>
-                
-                
-                  <div class="post-meta">
-                    <i class="iconfont icon-tags"></i>
-                    
-                      <a class="hover-with-bg" href="/tags/Python/">Python</a>
-                    
-                  </div>
                 
               </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Python/" class="category-chain-item">Python</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Python/">#Python</a>
+      
+    </div>
+  
+</div>
+
+
               
-                <p class="note note-warning">
-                  
-                    本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处
-                  
-                </p>
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>怎样让 Pydantic 自动实例出子类</div>
+      <div>https://blog.gokoruri.com/2021/06/pydantic-hack/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Simon_chen</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2021年6月24日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
               
               
-                <div class="post-prevnext">
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/" rel="external nofollow noreferrer">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2021/07/android-packet-capture/">
+                      <a href="/2021/07/android-packet-capture/" title="免 ROOT 安卓抓包">
                         <i class="iconfont icon-arrowleft"></i>
                         <span class="hidden-mobile">免 ROOT 安卓抓包</span>
                         <span class="visible-mobile">上一篇</span>
@@ -335,7 +426,7 @@
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2021/06/website-create/">
+                      <a href="/2021/06/website-create/" title="hexo 的建站过程">
                         <span class="hidden-mobile">hexo 的建站过程</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
@@ -351,19 +442,50 @@
         </div>
       </div>
     </div>
-    
-      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
-        <div id="toc">
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
   <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
   <div class="toc-body" id="toc-body"></div>
 </div>
 
-      </div>
-    
+
+
+  </aside>
+
+
+    </div>
   </div>
 </div>
 
-<!-- Custom -->
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
 
 
     
@@ -388,32 +510,34 @@
       <div class="modal-body mx-3">
         <div class="md-form mb-5">
           <input type="text" id="local-search-input" class="form-control validate">
-          <label data-error="x" data-success="v"
-                 for="local-search-input">关键词</label>
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
         </div>
         <div class="list-group" id="local-search-result"></div>
       </div>
     </div>
   </div>
 </div>
+
     
 
     
   </main>
 
-  <footer class="text-center mt-5 py-3">
-  <div class="footer-content">
-     <div id="runningTime"> 正在载入运行时间... </div> <a href="https://www.gokoruri.com" target="_blank" rel="nofollow noopener"> Copyright © 2021 Simon Chen </a> | <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"> powered by Fluid </a> 
-  </div>
+  <footer>
+    <div class="footer-inner">
   
-
+    <div class="footer-content">
+       <div id="runningTime"> 正在载入运行时间... </div> <a href="https://www.gokoruri.com" target="_blank" rel="nofollow noopener"> Copyright © 2021 Simon Chen </a> | <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"> powered by Fluid </a> 
+    </div>
   
-
   
-</footer>
+  
+  
+</div>
 
+  </footer>
 
-  <!-- SCRIPTS -->
+  <!-- Scripts -->
   
   <script  src="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js" ></script>
   <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.css" />
@@ -432,10 +556,7 @@
 <script  src="/js/events.js" ></script>
 <script  src="/js/plugins.js" ></script>
 
-<!-- Plugins -->
 
-
-  <script  src="/js/local-search.js" ></script>
 
 
 
@@ -445,37 +566,101 @@
 
 
 
-  
-
-
 
   
-    <script  src="https://cdn.jsdelivr.net/npm/tocbot@4.12.3/dist/tocbot.min.js" ></script>
+<script>
+  Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/tocbot@4.12.3/dist/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://cdn.jsdelivr.net/npm/clipboard@2.0.8/dist/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
   
+<script>
+  Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/anchor-js@4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
   
-    <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" ></script>
-  
-  
-    <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4.3.1/anchor.min.js" ></script>
-  
-  
-    <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2.0.8/dist/clipboard.min.js" ></script>
-  
+<script>
+  Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
 
 
+  <script>Fluid.plugins.imageCaption();</script>
 
-
-
-
-
-
-
-
-
-
-
-
-
+  <script  src="/js/local-search.js" ></script>
 
 
 
@@ -485,9 +670,15 @@
 
 
 
-<!-- 主题的启动项 保持在最底部 -->
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
 <script  src="/js/boot.js" ></script>
 
 
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
 </body>
 </html>
